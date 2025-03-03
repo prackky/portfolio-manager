@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f3f4f6; /* Light mode default */
+}
+
+.dark body {
+  background-color: #111827; /* Dark mode default */
+}

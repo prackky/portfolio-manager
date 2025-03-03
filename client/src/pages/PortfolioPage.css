@@ -1,0 +1,49 @@
+.portfolio-page {
+  padding: 20px;
+}
+
+h2, h3 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.investment-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.block {
+  width: 150px;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+}
+
+.block h3 {
+  margin: 0 0 10px 0;
+  color: white;
+}
+
+.block p {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.stock { background-color: #FF6384; }
+.cash { background-color: #36A2EB; }
+.fixedincome { background-color: #FFCE56; } /* Renamed from fixeddeposit */
+.mutualfund { background-color: #9966FF; }
+.realestate { background-color: #FF9F40; }
+
+.pie-chart {
+  max-width: 400px;
+  margin: 0 auto 30px auto;
+}
+
+.portfolio-table {
+  margin-top: 30px;
+}

@@ -1,0 +1,73 @@
+.App {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  max-width: 1000px; /* Increased to fit pie chart and blocks */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+nav {
+  margin-bottom: 20px;
+}
+
+nav h1 {
+  color: #333;
+  margin: 0 0 10px 0;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 20px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+nav ul li a:hover {
+  color: #45a049;
+}
+
+h2, h3 {
+  color: #333;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+input, button {
+  margin: 5px;
+  padding: 8px;
+  font-size: 14px;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
