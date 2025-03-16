@@ -9,9 +9,7 @@ import tech.knowshipp.pm.model.*;
 import tech.knowshipp.pm.util.AppUtil;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class PortfolioService {
@@ -19,27 +17,26 @@ public class PortfolioService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private String getUserId() {
-        return "user123"; // Hardcoded; replace with auth
-    }
-
-    public Portfolio getPortfolio() {
-        Portfolio portfolio = mongoTemplate.findOne(Query.query(Criteria.where("userId").is(getUserId())), Portfolio.class);
+    public Portfolio getPortfolio(String email) {
+        Portfolio portfolio = mongoTemplate.findOne(
+            Query.query(Criteria.where("userId").is(email)),
+            Portfolio.class
+        );
         if (portfolio == null) {
-            portfolio = new Portfolio(getUserId());
-            portfolio.setCurrency("₹"); // Example currency
+            portfolio = new Portfolio(email);
+            portfolio.setCurrency("₹");
             mongoTemplate.save(portfolio);
         }
         return portfolio;
     }
 
-    public double getTotalValue() {
-        Portfolio portfolio = getPortfolio();
+    public double getTotalValue(String email) {
+        Portfolio portfolio = getPortfolio(email);
         return portfolio.getAssets().stream().mapToDouble(Asset::getCurrentValue).sum();
     }
 
-    public void addStock(String symbol, String transType, double shares, double price, String date) {
-        Portfolio portfolio = getPortfolio();
+    public void addStock(String email, String symbol, String transType, double shares, double price, String date) {
+        Portfolio portfolio = getPortfolio(email);
         Stock stock = (Stock) portfolio.getAssets().stream()
                 .filter(a -> a.getId().equals(symbol) && a instanceof Stock)
                 .findFirst()
@@ -54,8 +51,8 @@ public class PortfolioService {
         mongoTemplate.save(portfolio);
     }
 
-    public void addFixedIncome(String id, double principal, double interestRate, String startDate, String maturityDate) {
-        Portfolio portfolio = getPortfolio();
+    public void addFixedIncome(String email, String id, double principal, double interestRate, String startDate, String maturityDate) {
+        Portfolio portfolio = getPortfolio(email);
         FixedIncome fi = (FixedIncome) portfolio.getAssets().stream()
                 .filter(a -> a.getId().equals(id) && a instanceof FixedIncome)
                 .findFirst()
@@ -73,8 +70,8 @@ public class PortfolioService {
         mongoTemplate.save(portfolio);
     }
 
-    public void addMutualFund(String id, String transType, double units, double price, String date) {
-        Portfolio portfolio = getPortfolio();
+    public void addMutualFund(String email, String id, String transType, double units, double price, String date) {
+        Portfolio portfolio = getPortfolio(email);
         MutualFund mf = (MutualFund) portfolio.getAssets().stream()
                 .filter(a -> a.getId().equals(id) && a instanceof MutualFund)
                 .findFirst()
@@ -89,8 +86,8 @@ public class PortfolioService {
         mongoTemplate.save(portfolio);
     }
 
-    public void addCash(String name, double amount) {
-        Portfolio portfolio = getPortfolio();
+    public void addCash(String email, String name, double amount) {
+        Portfolio portfolio = getPortfolio(email);
         Cash cash = (Cash) portfolio.getAssets().stream()
                 .filter(a -> a.getId().equals(name) && a instanceof Cash)
                 .findFirst()
@@ -105,8 +102,8 @@ public class PortfolioService {
         mongoTemplate.save(portfolio);
     }
 
-    public void addRealEstate(String name, double propertyValue, double purchasePrice, String purchaseDate, String location) {
-        Portfolio portfolio = getPortfolio();
+    public void addRealEstate(String email, String name, double propertyValue, double purchasePrice, String purchaseDate, String location) {
+        Portfolio portfolio = getPortfolio(email);
         RealEstate re = (RealEstate) portfolio.getAssets().stream()
                 .filter(a -> a.getId().equals(name) && a instanceof RealEstate)
                 .findFirst()
@@ -124,8 +121,8 @@ public class PortfolioService {
         mongoTemplate.save(portfolio);
     }
 
-    public void updateStock(String id, Map<String, Object> data) {
-        Portfolio portfolio = getPortfolio();
+    public void updateStock(String email, String id, Map<String, Object> data) {
+        Portfolio portfolio = getPortfolio(email);
         Stock stock = (Stock) portfolio.getAssets().stream()
                 .filter(a -> a.getId().equals(id) && a instanceof Stock)
                 .findFirst()
@@ -148,8 +145,8 @@ public class PortfolioService {
         }
     }
 
-    public void updateFixedIncome(String id, Map<String, Object> data) {
-        Portfolio portfolio = getPortfolio();
+    public void updateFixedIncome(String email, String id, Map<String, Object> data) {
+        Portfolio portfolio = getPortfolio(email);
         FixedIncome fi = (FixedIncome) portfolio.getAssets().stream()
                 .filter(a -> a.getId().equals(id) && a instanceof FixedIncome)
                 .findFirst()
@@ -163,8 +160,8 @@ public class PortfolioService {
         }
     }
 
-    public void updateMutualFund(String id, Map<String, Object> data) {
-        Portfolio portfolio = getPortfolio();
+    public void updateMutualFund(String email, String id, Map<String, Object> data) {
+        Portfolio portfolio = getPortfolio(email);
         MutualFund mf = (MutualFund) portfolio.getAssets().stream()
                 .filter(a -> a.getId().equals(id) && a instanceof MutualFund)
                 .findFirst()
@@ -187,8 +184,8 @@ public class PortfolioService {
         }
     }
 
-    public void updateCash(String id, Map<String, Object> data) {
-        Portfolio portfolio = getPortfolio();
+    public void updateCash(String email, String id, Map<String, Object> data) {
+        Portfolio portfolio = getPortfolio(email);
         Cash cash = (Cash) portfolio.getAssets().stream()
                 .filter(a -> a.getId().equals(id) && a instanceof Cash)
                 .findFirst()
@@ -199,8 +196,8 @@ public class PortfolioService {
         }
     }
 
-    public void updateRealEstate(String id, Map<String, Object> data) {
-        Portfolio portfolio = getPortfolio();
+    public void updateRealEstate(String email, String id, Map<String, Object> data) {
+        Portfolio portfolio = getPortfolio(email);
         RealEstate re = (RealEstate) portfolio.getAssets().stream()
                 .filter(a -> a.getId().equals(id) && a instanceof RealEstate)
                 .findFirst()
@@ -214,19 +211,19 @@ public class PortfolioService {
         }
     }
 
-    public void deleteAsset(String type, String id) {
-        Portfolio portfolio = getPortfolio();
+    public void deleteAsset(String email, String type, String id) {
+        Portfolio portfolio = getPortfolio(email);
         portfolio.getAssets().removeIf(a -> a.getType().equals(type) && a.getId().equals(id));
         mongoTemplate.save(portfolio);
     }
 
-    public String getCurrency() {
-        return getPortfolio().getCurrency();
+    public String getCurrency(String email) {
+        return getPortfolio(email).getCurrency();
     }
 
     // Assuming currency is added to Portfolio
-    public void setCurrency(String currency) {
-        Portfolio portfolio = getPortfolio();
+    public void setCurrency(String email, String currency) {
+        Portfolio portfolio = getPortfolio(email);
         portfolio.setCurrency(currency);
         mongoTemplate.save(portfolio);
     }

@@ -1,8 +1,11 @@
 package tech.knowshipp.pm.controller;
 
 import tech.knowshipp.pm.model.*;
+import tech.knowshipp.pm.service.AuthenticationService;
 import tech.knowshipp.pm.service.PortfolioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -18,9 +21,65 @@ public class PortfolioController {
     @Autowired
     private PortfolioService portfolioService;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
+    @PostMapping("/signin")
+    public ResponseEntity<Map<String, String>> signIn(@RequestBody Map<String, String> request) {
+        try {
+            String token = authenticationService.authenticate(request.get("email"), request.get("password"));
+            return ResponseEntity.ok(Map.of("token", token));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<Map<String, String>> signUp(@RequestBody Map<String, String> request) {
+        try {
+            authenticationService.register(request.get("email"), request.get("password"));
+            return ResponseEntity.ok(Map.of("message", "User registered successfully. Please verify your email."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // write API endpoints to handle the reset password functionality
+    @PostMapping("/reset_password")
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> request, @RequestParam String resetToken) {
+        try {
+            authenticationService.resetPassword(request.get("email"), request.get("password"), resetToken);
+            return ResponseEntity.ok(Map.of("message", "Password has been reset successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // write API endpoints to handle the forgot password functionality
+    @PostMapping("/forgot_password")
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<String, String> request) {
+        try {
+            authenticationService.forgotPassword(request.get("email"));
+            return ResponseEntity.ok(Map.of("message", "Password reset link has been sent to your email"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("confirm-account")
+    public ResponseEntity<Map<String, String>> confirm(@RequestParam String token, @RequestParam String email) {
+        try {
+            authenticationService.confirm(token, email);
+            return ResponseEntity.ok(Map.of("message", "Account verified successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/assets")
     public Map<String, Object> getAssets() {
-        Portfolio portfolio = portfolioService.getPortfolio();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Portfolio portfolio = portfolioService.getPortfolio(email);
         List<Map<String, Object>> assetList = portfolio.getAssets().stream()
                 .map(a -> {
                     Map<String, Object> map = new HashMap<>();
@@ -33,14 +92,15 @@ public class PortfolioController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("assets", assetList);
-        response.put("total_value", portfolioService.getTotalValue());
+        response.put("total_value", portfolioService.getTotalValue(email));
         response.put("currency", portfolio.getCurrency()); // Assuming currency is added to Portfolio
         return response;
     }
 
     @GetMapping("/assets/{type}")
     public List<Map<String, Object>> getAssetsByType(@PathVariable String type) {
-        Portfolio portfolio = portfolioService.getPortfolio();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Portfolio portfolio = portfolioService.getPortfolio(email);
         return portfolio.getAssets().stream()
                 .filter(a -> a.getType().equals(type))
                 .map(a -> {
@@ -81,7 +141,9 @@ public class PortfolioController {
 
     @PostMapping("/add_stock")
     public Map<String, String> addStock(@RequestBody Map<String, String> request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         portfolioService.addStock(
+                email,
                 request.get("id"),
                 request.get("transType"),
                 Double.parseDouble(request.get("shares")),
@@ -93,7 +155,9 @@ public class PortfolioController {
 
     @PostMapping("/add_fixed_income")
     public Map<String, String> addFixedIncome(@RequestBody Map<String, String> request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         portfolioService.addFixedIncome(
+                email,
                 request.get("id"),
                 Double.parseDouble(request.get("principal")),
                 Double.parseDouble(request.get("interestRate")),
@@ -105,7 +169,9 @@ public class PortfolioController {
 
     @PostMapping("/add_mutual_fund")
     public Map<String, String> addMutualFund(@RequestBody Map<String, String> request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         portfolioService.addMutualFund(
+                email,
                 request.get("id"),
                 request.get("transType"),
                 Double.parseDouble(request.get("units")),
@@ -117,7 +183,9 @@ public class PortfolioController {
 
     @PostMapping("/add_cash")
     public Map<String, String> addCash(@RequestBody Map<String, String> request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         portfolioService.addCash(
+                email,
                 request.get("id"),
                 Double.parseDouble(request.get("amount"))
         );
@@ -126,7 +194,9 @@ public class PortfolioController {
 
     @PostMapping("/add_real_estate")
     public Map<String, String> addRealEstate(@RequestBody Map<String, String> request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         portfolioService.addRealEstate(
+                email,
                 request.get("id"),
                 Double.parseDouble(request.get("propertyValue")),
                 Double.parseDouble(request.get("purchasePrice")),
@@ -138,21 +208,22 @@ public class PortfolioController {
 
     @PutMapping("/assets/{type}/{id}")
     public Map<String, String> updateAsset(@PathVariable String type, @PathVariable String id, @RequestBody Map<String, Object> request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         switch (type) {
             case "Stock":
-                portfolioService.updateStock(id, request);
+                portfolioService.updateStock(email, id, request);
                 break;
             case "FixedIncome":
-                portfolioService.updateFixedIncome(id, request);
+                portfolioService.updateFixedIncome(email, id, request);
                 break;
             case "MutualFund":
-                portfolioService.updateMutualFund(id, request);
+                portfolioService.updateMutualFund(email, id, request);
                 break;
             case "Cash":
-                portfolioService.updateCash(id, request);
+                portfolioService.updateCash(email, id, request);
                 break;
             case "RealEstate":
-                portfolioService.updateRealEstate(id, request);
+                portfolioService.updateRealEstate(email, id, request);
                 break;
         }
         return Map.of("message", type + " updated", "id", id);
@@ -160,7 +231,8 @@ public class PortfolioController {
 
     @DeleteMapping("/assets/{type}/{id}")
     public Map<String, String> deleteAsset(@PathVariable String type, @PathVariable String id) {
-        portfolioService.deleteAsset(type, id);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        portfolioService.deleteAsset(email, type, id);
         return Map.of("message", type + " deleted", "id", id);
     }
 }
