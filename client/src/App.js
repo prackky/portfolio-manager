@@ -6,6 +6,10 @@ import AddUpdatePage from './pages/AddUpdatePage';
 import LandingPage from './pages/LandingPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignupPage';
+import ConfirmAccountPage from './pages/ConfirmAccountPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -21,11 +25,23 @@ function App() {
   const handleSignIn = (token) => {
     localStorage.setItem('token', token); // Mock storage
     setIsAuthenticated(true);
+    showToast('Signed in successfully!', 'success');
+  };
+
+  const handleSignUp = (message, type) => {
+    showToast(message, type);
   };
 
   const handleSignOut = () => {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
+    showToast('Signed out successfully!', 'info');
+  };
+
+  const showToast = (message, type) => {
+    if (type === 'error') toast.error(message);
+    if (type === 'success') toast.success(message);
+    if (type === 'info') toast.info(message);
   };
 
   return (
@@ -57,9 +73,11 @@ function App() {
         </nav>
         <main className="container mx-auto p-6">
           <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/signin" element={<SignInPage onSignIn={handleSignIn} />} />
-            <Route path="/signup" element={<SignUpPage onSignIn={handleSignIn} />} />
+            <Route path="/" element={isAuthenticated ? <PortfolioPage /> : <LandingPage />} />
+            <Route path="/confirm-account" element={isAuthenticated ? <PortfolioPage /> : <ConfirmAccountPage showToast={showToast}/>} />
+            <Route path="/forgot-password" element={<ResetPasswordPage />} />
+            <Route path="/signin" element={isAuthenticated ? <PortfolioPage /> : <SignInPage onSignIn={handleSignIn} />} />
+            <Route path="/signup" element={isAuthenticated ? <PortfolioPage /> : <SignUpPage onSignUp={handleSignUp} />} />
             <Route
               path="/portfolio"
               element={isAuthenticated ? <PortfolioPage /> : <Navigate to="/signin" />}
@@ -73,6 +91,7 @@ function App() {
         <footer className="bg-gray-200 dark:bg-gray-800 text-center p-4 mt-8">
           <p className="text-gray-600 dark:text-gray-300">© 2025 Portfolio Manager. All rights reserved.</p>
         </footer>
+        <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
       </div>
     </Router>
   );

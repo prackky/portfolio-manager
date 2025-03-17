@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 function SignInPage({ onSignIn }) {
@@ -18,18 +18,26 @@ function SignInPage({ onSignIn }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
+      const data = await response.json();
       if (response.ok) {
-        const data = await response.json();
         onSignIn(data.token); // Assuming token-based auth
         navigate('/portfolio');
       } else {
-        const data = await response.json();
         setError(data.error);
       }
     } catch (err) {
       setError('Sign-in failed. Please try again.');
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
@@ -70,6 +78,7 @@ function SignInPage({ onSignIn }) {
         </form>
         <p className="mt-4 text-center text-gray-600 dark:text-gray-300">
           Don’t have an account? <Link to="/signup" className="text-secondary hover:underline">Sign Up</Link>
+          <Link to="/forgot-password" className="text-secondary hover:underline">Forgot Pasword</Link>
         </p>
       </div>
     </div>

@@ -67,9 +67,9 @@ public class PortfolioController {
     }
 
     @PostMapping("confirm-account")
-    public ResponseEntity<Map<String, String>> confirm(@RequestParam String token, @RequestParam String email) {
+    public ResponseEntity<Map<String, String>> confirm(@RequestBody Map<String, String> request) {
         try {
-            authenticationService.confirm(token, email);
+            authenticationService.confirm(request.get("token"), request.get("email"));
             return ResponseEntity.ok(Map.of("message", "Account verified successfully"));
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));

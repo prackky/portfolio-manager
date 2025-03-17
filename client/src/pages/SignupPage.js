@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-function SignUpPage({ onSignIn }) {
+function SignUpPage({ onSignUp }) {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,15 +18,19 @@ function SignUpPage({ onSignIn }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
+      const data = await response.json();
       if (response.ok) {
-        const data = await response.json();
-        onSignIn(data.token); // Assuming token-based auth
-        navigate('/portfolio');
+        setSuccessMessage(data.message); // Show success message from API response
+        setError(null);
+        onSignUp(data.message, 'success'); // Pass message to parent component
       } else {
-        setError('Sign-up failed. Email may already be in use.');
+        setError(data.error);
+        onSignUp(data.error, 'error')
+        setSuccessMessage(null);
       }
     } catch (err) {
       setError('Sign-up failed. Please try again.');
+      setSuccessMessage(null);
     }
   };
 
@@ -60,6 +64,7 @@ function SignUpPage({ onSignIn }) {
             />
           </div>
           {error && <p className="text-red-500">{error}</p>}
+          {successMessage && <p className="text-green-500">{successMessage}</p>}
           <button
             type="submit"
             className="w-full bg-secondary text-white p-2 rounded hover:bg-blue-700 transition-colors"

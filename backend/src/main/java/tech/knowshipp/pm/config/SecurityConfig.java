@@ -22,7 +22,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/signin", "/api/signup", "/static/**", "/", "/index.html").permitAll()
+                .requestMatchers("/api/signin", "/api/signup", "/static/**", "/", "/index.html", "/confirm-account", "/api/confirm-account", "/signin", "/signup", "/forgot-password", "/favicon.ico")
+                    .permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
