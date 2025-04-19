@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { addFixedIncome, updateFixedIncome } from '../services/api';
+import { addFixedIncome } from '../services/api';
 
-function FixedIncomeForm({ onSuccess, initialData = {}, isEditing = false }) {
+function FixedIncomeForm({ onSuccess, initialData = {} }) {
   const [formData, setFormData] = useState({
     id: '',
     principal: '',
@@ -36,15 +36,11 @@ function FixedIncomeForm({ onSuccess, initialData = {}, isEditing = false }) {
       maturityDate: formData.maturityDate,
     };
 
-    const response = isEditing
-      ? await updateFixedIncome(formData.id, payload)
-      : await addFixedIncome(payload);
+    const response = await addFixedIncome(payload);
 
     if (response.ok) {
       onSuccess();
-      if (!isEditing) {
-        setFormData({ id: '', principal: '', interestRate: '', startDate: '', maturityDate: '' });
-      }
+      setFormData({ id: '', principal: '', interestRate: '', startDate: '', maturityDate: '' });
     }
   };
 
@@ -97,7 +93,7 @@ function FixedIncomeForm({ onSuccess, initialData = {}, isEditing = false }) {
         type="submit"
         className="bg-secondary text-white p-2 rounded hover:bg-blue-700 transition-colors col-span-2 sm:col-span-1"
       >
-        {isEditing ? 'Update Fixed Income' : 'Add Fixed Income'}
+        {'Add Fixed Income'}
       </button>
     </form>
   );

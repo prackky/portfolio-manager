@@ -39,7 +39,7 @@ function LandingPage() {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
           <FaCrown className="text-4xl text-yellow-500 mb-4 mx-auto" />
           <h3 className="text-xl font-semibold mb-2">Premium Net Worth</h3>
-          <p>See your total wealth in a luxurious, easy-to-read display.</p>
+          <p>See your total wealth in an intuitive, easy-to-read display.</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
           <FaLock className="text-4xl text-secondary mb-4 mx-auto" />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { addRealEstate, updateRealEstate } from '../services/api';
 
-function RealEstateForm({ onSuccess, initialData = {}, isEditing = false }) {
+function RealEstateForm({ onSuccess, initialData = {} }) {
   const [formData, setFormData] = useState({
     id: '',
     propertyValue: '',
@@ -36,15 +36,11 @@ function RealEstateForm({ onSuccess, initialData = {}, isEditing = false }) {
       location: formData.location,
     };
 
-    const response = isEditing
-      ? await updateRealEstate(formData.id, payload)
-      : await addRealEstate(payload);
+    const response = await addRealEstate(payload);
 
     if (response.ok) {
       onSuccess();
-      if (!isEditing) {
-        setFormData({ name: '', propertyValue: '', purchasePrice: '', purchaseDate: '', location: '' });
-      }
+      setFormData({ name: '', propertyValue: '', purchasePrice: '', purchaseDate: '', location: '' });
     }
   };
 
@@ -98,7 +94,7 @@ function RealEstateForm({ onSuccess, initialData = {}, isEditing = false }) {
         type="submit"
         className="bg-secondary text-white p-2 rounded hover:bg-blue-700 transition-colors col-span-2 sm:col-span-1"
       >
-        {isEditing ? 'Update Real Estate' : 'Add Real Estate'}
+        {'Add Real Estate'}
       </button>
     </form>
   );

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import FixedIncomeForm from './FixedIncomeForm';
-import { getFixedIncomes, deleteFixedIncome } from '../services/api';
+import FixedIncomeModal from './FixedIncomeModal'; // Import the new modal component
+import { getFixedIncomes, deleteFixedIncome, updateFixedIncome } from '../services/api';
 
 function FixedIncomeTab() {
   const [fixedIncomes, setFixedIncomes] = useState([]);
   const [editingFixedIncome, setEditingFixedIncome] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
 
   const fetchFixedIncomes = async () => {
     const data = await getFixedIncomes();
@@ -22,10 +24,13 @@ function FixedIncomeTab() {
 
   const handleEdit = (fixedIncome) => {
     setEditingFixedIncome(fixedIncome);
+    setIsModalOpen(true); // Open the modal
   };
 
   const handleUpdate = async (updatedFixedIncome) => {
+    await updateFixedIncome(updatedFixedIncome.id, updatedFixedIncome); // Call the update API
     setEditingFixedIncome(null);
+    setIsModalOpen(false); // Close the modal
     fetchFixedIncomes();
   };
 
@@ -71,19 +76,16 @@ function FixedIncomeTab() {
         <p className="text-gray-600 dark:text-gray-300 mb-6">No fixed income assets available.</p>
       )}
 
-      {editingFixedIncome && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Edit Fixed Income</h3>
-          <FixedIncomeForm
-            initialData={editingFixedIncome}
-            onSuccess={handleUpdate}
-            isEditing={true}
-          />
-        </div>
-      )}
-
       <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Add Fixed Income</h3>
       <FixedIncomeForm onSuccess={handleAddSuccess} />
+
+      {isModalOpen && (
+        <FixedIncomeModal
+          fixedIncome={editingFixedIncome}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleUpdate}
+        />
+      )}
     </div>
   );
 }
