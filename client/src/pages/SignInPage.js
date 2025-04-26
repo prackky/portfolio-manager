@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import app from '../firebase'; // Import the initialized Firebase app
+import { FcGoogle } from 'react-icons/fc'; // Import Google icon
 
 function SignInPage({ onSignIn }) {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const auth = getAuth(app); // Use the initialized app
+
+  useEffect(() => {
+    setFormData({ email: '', password: '' }); // Clear fields on page load
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -13,10 +21,25 @@ function SignInPage({ onSignIn }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/signin', {
+      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+      const token = await user.getIdToken();
+      onSignIn(token); // Assuming token-based auth
+      navigate('/portfolio');
+    } catch (err) {
+      setError('Sign-in failed. ' + err.message);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const token = await result.user.getIdToken();
+      const response = await fetch('/api/google-signin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ token }),
       });
       const data = await response.json();
       if (response.ok) {
@@ -26,7 +49,7 @@ function SignInPage({ onSignIn }) {
         setError(data.error);
       }
     } catch (err) {
-      setError('Sign-in failed. Please try again.');
+      setError('Google Sign-In failed. Please try again.');
     }
   };
 
@@ -76,9 +99,17 @@ function SignInPage({ onSignIn }) {
             Sign In
           </button>
         </form>
+        <button
+          onClick={handleGoogleSignIn}
+          className="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 p-2 rounded hover:bg-gray-100 transition-colors mt-4 shadow-sm"
+        >
+          <FcGoogle className="mr-2 text-xl" /> {/* Add Google icon */}
+          Sign In with Google
+        </button>
         <p className="mt-4 text-center text-gray-600 dark:text-gray-300">
           Don’t have an account? <Link to="/signup" className="text-secondary hover:underline">Sign Up</Link>
-          <Link to="/forgot-password" className="text-secondary hover:underline">Forgot Pasword</Link>
+          <span className="mx-2">|</span> {/* Add vertical line */}
+          <Link to="/forgot-password" className="text-secondary hover:underline">Forgot Password</Link>
         </p>
       </div>
     </div>

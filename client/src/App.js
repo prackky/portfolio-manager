@@ -20,6 +20,20 @@ function App() {
     else document.documentElement.classList.remove('dark');
   }, [darkMode]);
 
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      console.log('User is unauthenticated');
+      localStorage.removeItem('token');
+      window.location.href = '/signin';
+    };
+
+    window.addEventListener('unauthorized', handleUnauthorized);
+
+    return () => {
+      window.removeEventListener('unauthorized', handleUnauthorized);
+    };
+  }, []);
+
   const toggleDarkMode = () => setDarkMode((prevMode) => !prevMode);
 
   const handleSignIn = (token) => {

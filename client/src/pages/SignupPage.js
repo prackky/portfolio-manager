@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import app from '../firebase'; // Import the initialized Firebase app
 
 function SignUpPage({ onSignUp }) {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const auth = getAuth(app); // Use the initialized Firebase app
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -13,24 +16,16 @@ function SignUpPage({ onSignUp }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setSuccessMessage(data.message); // Show success message from API response
-        setError(null);
-        onSignUp(data.message, 'success'); // Pass message to parent component
-      } else {
-        setError(data.error);
-        onSignUp(data.error, 'error')
-        setSuccessMessage(null);
-      }
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+      setSuccessMessage('Sign-up successful! Please verify your email.');
+      await sendEmailVerification(user);
+      setError(null);
+      onSignUp('Sign-up successful!', 'success'); // Pass success message to parent component
     } catch (err) {
-      setError('Sign-up failed. Please try again.');
+      setError(err.message);
       setSuccessMessage(null);
+      onSignUp(err.message, 'error'); // Pass error message to parent component
     }
   };
 

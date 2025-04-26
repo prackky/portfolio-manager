@@ -1,5 +1,7 @@
 package tech.knowshipp.pm.config;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
 import tech.knowshipp.pm.service.AuthenticationService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -29,13 +31,16 @@ public class JwtFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             try {
-                String email = authenticationService.getEmailFromToken(token);
-                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
+                String uid = decodedToken.getUid();
+                request.setAttribute("uid", uid);
+                String email = decodedToken.getEmail();
+                if (uid != null && SecurityContextHolder.getContext().getAuthentication() == null && decodedToken.isEmailVerified()) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, null, null);
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
-            } catch (JwtException e) {
+            } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }

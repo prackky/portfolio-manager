@@ -1,12 +1,14 @@
 package tech.knowshipp.pm.controller;
 
-import tech.knowshipp.pm.model.*;
-import tech.knowshipp.pm.service.AuthenticationService;
-import tech.knowshipp.pm.service.PortfolioService;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import tech.knowshipp.pm.model.*;
+import tech.knowshipp.pm.service.AuthenticationService;
+import tech.knowshipp.pm.service.PortfolioService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,43 +27,55 @@ public class PortfolioController {
     private AuthenticationService authenticationService;
 
     @PostMapping("/signin")
-    public ResponseEntity<Map<String, String>> signIn(@RequestBody Map<String, String> request) {
-        try {
-            String token = authenticationService.authenticate(request.get("email"), request.get("password"));
-            return ResponseEntity.ok(Map.of("token", token));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
+    public ResponseEntity<Map<String, Object>> signIn(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String password = request.get("password");
+        var result = authenticationService.authenticate(email, password);
+        if(result.containsKey("error")) {
+            return ResponseEntity.status(401).body(result);
         }
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/google-signin")
+    public ResponseEntity<Map<String, String>> googleSignIn(@RequestBody Map<String, String> request) {
+        String idToken = request.get("token");
+        Map<String, String> response = new HashMap<>();
+        response.put("token", idToken);
+        response.put("message", "Google sign-in successful");
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/signup")
     public ResponseEntity<Map<String, String>> signUp(@RequestBody Map<String, String> request) {
         try {
-            authenticationService.register(request.get("email"), request.get("password"));
+            String email = request.get("email");
+            String password = request.get("password");
+            authenticationService.register(email, password);
             return ResponseEntity.ok(Map.of("message", "User registered successfully. Please verify your email."));
-        } catch (RuntimeException e) {
+        } catch (FirebaseAuthException e) {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
     }
 
-    // write API endpoints to handle the reset password functionality
     @PostMapping("/reset_password")
-    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> request, @RequestParam String resetToken) {
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> request) {
         try {
-            authenticationService.resetPassword(request.get("email"), request.get("password"), resetToken);
-            return ResponseEntity.ok(Map.of("message", "Password has been reset successfully"));
-        } catch (RuntimeException e) {
+            String email = request.get("email");
+            FirebaseAuth.getInstance().generatePasswordResetLink(email);
+            return ResponseEntity.ok(Map.of("message", "Password reset link has been sent to your email"));
+        } catch (FirebaseAuthException e) {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
     }
 
-    // write API endpoints to handle the forgot password functionality
     @PostMapping("/forgot_password")
     public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<String, String> request) {
         try {
-            authenticationService.forgotPassword(request.get("email"));
+            String email = request.get("email");
+            FirebaseAuth.getInstance().generatePasswordResetLink(email);
             return ResponseEntity.ok(Map.of("message", "Password reset link has been sent to your email"));
-        } catch (RuntimeException e) {
+        } catch (FirebaseAuthException e) {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
     }
@@ -181,7 +195,7 @@ public class PortfolioController {
         return Map.of("message", "Mutual Fund added", "id", request.get("id"));
     }
 
-    @PostMapping("/add_cash")
+    @PostMapping("/add_cash_asset")
     public Map<String, String> addCash(@RequestBody Map<String, String> request) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         portfolioService.addCash(

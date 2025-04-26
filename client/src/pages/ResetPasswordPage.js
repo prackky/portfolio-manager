@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { getAuth, sendPasswordResetEmail, confirmPasswordReset } from 'firebase/auth';
 
 function ResetPasswordPage() {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -7,8 +8,8 @@ function ResetPasswordPage() {
   const [message, setMessage] = useState(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
-  const emailParam = searchParams.get('email');
+  const token = searchParams.get('oobCode'); // Firebase reset token
+  const auth = getAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,23 +18,21 @@ function ResetPasswordPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(token ? '/api/reset_password' + '?resetToken=' + token : '/api/forgot_password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(token ? { email: emailParam, password: formData.password } : { email: formData.email }),
-      });
-      if (response.ok) {
-        if (token) {
-          navigate('/signin');
-        } else {
-          setMessage('Password reset link sent to your email.');
-        }
+      if (token) {
+        // Reset password using Firebase
+        await confirmPasswordReset(auth, token, formData.password);
+        setMessage('Password has been reset successfully.');
+        setError(null);
+        navigate('/signin');
       } else {
-        const data = await response.json();
-        setError(data.error);
+        // Send password reset email using Firebase
+        await sendPasswordResetEmail(auth, formData.email);
+        setMessage('Password reset link sent to your email.');
+        setError(null);
       }
     } catch (err) {
-      setError('Request failed. Please try again.');
+      setError(err.message);
+      setMessage(null);
     }
   };
 
