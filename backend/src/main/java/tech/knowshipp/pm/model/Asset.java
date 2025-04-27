@@ -13,13 +13,20 @@ public abstract class Asset {
     public Asset(String id, String type) {
         this.id = id;
         this.type = type;
-        this.name = id; // Name defaults to ID for simplicity
+    }
+
+    public Asset(String id, String type, String name) {
+        this.id = id;
+        this.type = type;
+        this.name = name;
     }
 
     public String getId() { return id; }
     public String getType() { return type; }
+    public String getName() { return name; }
     public abstract double getCurrentValue();
 
     public void setId(String id) { this.id = id; }
     public void setType(String type) { this.type = type; }
+    public void setName(String name) { this.name = name; }
 }

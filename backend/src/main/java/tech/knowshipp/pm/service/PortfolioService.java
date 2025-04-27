@@ -17,6 +17,9 @@ public class PortfolioService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
+    private MutualFundService mutualFundService;
+
     public Portfolio getPortfolio(String email) {
         Portfolio portfolio = mongoTemplate.findOne(
             Query.query(Criteria.where("userId").is(email)),
@@ -70,7 +73,7 @@ public class PortfolioService {
         mongoTemplate.save(portfolio);
     }
 
-    public void addMutualFund(String email, String id, String transType, double units, double price, String date) {
+    public void addMutualFund(String email, String id, String name, String transType, double units, double price, String date) {
         Portfolio portfolio = getPortfolio(email);
         MutualFund mf = (MutualFund) portfolio.getAssets().stream()
                 .filter(a -> a.getId().equals(id) && a instanceof MutualFund)
@@ -78,8 +81,9 @@ public class PortfolioService {
                 .orElse(null);
 
         if (mf == null) {
-            mf = new MutualFund(id);
-            mf.setCurrentPrice(12); // Hardcoded; use API
+            mf = new MutualFund(id, name);
+            var currentPrice = mutualFundService.getMutualFundById(id).getData().getFirst().getNav();
+            mf.setCurrentPrice(Double.valueOf(currentPrice));
             portfolio.getAssets().add(mf);
         }
         mf.addTransaction(transType, units, price, LocalDate.parse(date));

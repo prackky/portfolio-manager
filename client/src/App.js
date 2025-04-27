@@ -10,10 +10,13 @@ import ConfirmAccountPage from './pages/ConfirmAccountPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { API_KEY } from './firebase'; // Import API_KEY from firebase.js
+import { setGlobalLoading } from './services/api'; // Import global loading setter
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Simple auth state
+  const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('token')); // Initialize based on session storage
+  const [loading, setLoading] = useState(false); // Global loading state
 
   useEffect(() => {
     if (darkMode) document.documentElement.classList.add('dark');
@@ -23,7 +26,7 @@ function App() {
   useEffect(() => {
     const handleUnauthorized = () => {
       console.log('User is unauthenticated');
-      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
       window.location.href = '/signin';
     };
 
@@ -34,10 +37,21 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    setGlobalLoading(setLoading); // Pass setLoading to api.js for global usage
+  }, []);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true); // Ensure authentication state persists on refresh
+    }
+  }, []);
+
   const toggleDarkMode = () => setDarkMode((prevMode) => !prevMode);
 
   const handleSignIn = (token) => {
-    localStorage.setItem('token', token); // Mock storage
+    sessionStorage.setItem('token', token); // Use sessionStorage for better token handling
     setIsAuthenticated(true);
     showToast('Signed in successfully!', 'success');
   };
@@ -46,10 +60,15 @@ function App() {
     showToast(message, type);
   };
 
-  const handleSignOut = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-    showToast('Signed out successfully!', 'info');
+  const handleSignOut = async () => {
+    try {
+      sessionStorage.removeItem('token'); // Clear token from sessionStorage
+      setIsAuthenticated(false);
+      showToast('Signed out successfully!', 'info');
+    } catch (error) {
+      console.error('Error during sign-out:', error);
+      showToast('Error during sign-out. Please try again.', 'error');
+    }
   };
 
   const showToast = (message, type) => {
@@ -60,6 +79,11 @@ function App() {
 
   return (
     <Router>
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 animate-spin"></div>
+        </div>
+      )}
       <div className="min-h-screen">
         <nav className="bg-primary dark:bg-gray-800 text-white p-4 shadow-lg sticky top-0 z-10">
           <div className="container mx-auto flex justify-between items-center">

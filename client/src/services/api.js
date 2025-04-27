@@ -1,181 +1,180 @@
 const API_BASE_URL = '/api/assets';
 
+let globalSetLoading = null;
+
+export const setGlobalLoading = (setLoading) => {
+  globalSetLoading = setLoading;
+};
+
 const handleUnauthorized = () => {
   // Notify the app about unauthorized status
   window.dispatchEvent(new Event('unauthorized'));
 };
 
+const handleRequest = async (url, options) => {
+  try {
+    if (globalSetLoading) globalSetLoading(true); // Enable global loading
+    const response = await fetch(url, options);
+    if (response.status === 401) handleUnauthorized();
+    return response;
+  } finally {
+    if (globalSetLoading) globalSetLoading(false); // Disable global loading
+  }
+};
+
 // Fetch all assets
 export const fetchAssets = async () => {
-  const response = await fetch(API_BASE_URL, {
-    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+  const response = await handleRequest(API_BASE_URL, {
+    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
   });
-  if (response.status === 401) handleUnauthorized();
   return response.json();
 };
 
 // Add a new cash asset
 export const addCashAsset = async (payload) => {
-  const response = await fetch('/api/add_cash_asset', {
+  const response = await handleRequest('/api/add_cash_asset', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
     body: JSON.stringify(payload),
   });
-  if (response.status === 401) handleUnauthorized();
   return response;
 };
 
 // Fetch cash assets
 export const fetchCashAssets = async () => {
-  const response = await fetch(`${API_BASE_URL}/Cash`, {
-    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+  const response = await handleRequest(`${API_BASE_URL}/Cash`, {
+    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
   });
-  if (response.status === 401) handleUnauthorized();
   return response.json();
 };
 
 // Delete a cash asset by ID
 export const deleteCashAsset = async (id) => {
-  const response = await fetch(`${API_BASE_URL}/Cash/${id}`, { 
+  await handleRequest(`${API_BASE_URL}/Cash/${id}`, { 
     method: 'DELETE',
-    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
   });
-  if (response.status === 401) handleUnauthorized();
 };
 
 // Update a cash asset by ID
 export const updateCashAsset = async (id, updatedCash) => {
-  const response = await fetch(`${API_BASE_URL}/Cash/${id}`, {
+  await handleRequest(`${API_BASE_URL}/Cash/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
     body: JSON.stringify(updatedCash),
   });
-  if (response.status === 401) handleUnauthorized();
 };
 
 // Add a new fixed income asset
 export const addFixedIncome = async (payload) => {
-  const response = await fetch('/api/add_fixed_income', {
+  const response = await handleRequest('/api/add_fixed_income', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
     body: JSON.stringify(payload),
   });
-  if (response.status === 401) handleUnauthorized();
   return response;
 };
 
 // Update a fixed income asset by ID
 export const updateFixedIncome = async (id, payload) => {
-  const response = await fetch(`/api/assets/FixedIncome/${id}`, {
+  const response = await handleRequest(`/api/assets/FixedIncome/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
     body: JSON.stringify(payload),
   });
-  if (response.status === 401) handleUnauthorized();
   return response;
 };
 
 export const getFixedIncomes = async () => {
-  const response = await fetch('/api/assets/FixedIncome', {
-    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+  const response = await handleRequest('/api/assets/FixedIncome', {
+    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
   });
-  if (response.status === 401) handleUnauthorized();
   const data = await response.json();
   return data;
 };
 
 export const deleteFixedIncome = async (id) => {
-  const response = await fetch(`/api/assets/FixedIncome/${id}`, { 
+  await handleRequest(`/api/assets/FixedIncome/${id}`, { 
     method: 'DELETE',
-    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
   });
-  if (response.status === 401) handleUnauthorized();
 };
 
 export const addMutualFund = async (payload) => {
-  const response = await fetch('/api/add_mutual_fund', {
+  const response = await handleRequest('/api/add_mutual_fund', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
     body: JSON.stringify(payload),
   });
-  if (response.status === 401) handleUnauthorized();
   return response;
 };
 
 export const updateMutualFund = async (payload) => {
-  const response = await fetch(`/api/assets/MutualFund/${payload.id}`, {
+  const response = await handleRequest(`/api/assets/MutualFund/${payload.id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
     body: JSON.stringify(payload),
   });
-  if (response.status === 401) handleUnauthorized();
   return response;
 };
 
 export const getMutualFunds = async () => {
-  const response = await fetch('/api/assets/MutualFund', {
-    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+  const response = await handleRequest('/api/assets/MutualFund', {
+    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
   });
-  if (response.status === 401) handleUnauthorized();
   const data = await response.json();
   return data;
 };
 
 export const deleteMutualFund = async (id) => {
-  const response = await fetch(`/api/assets/MutualFund/${id}`, { 
+  await handleRequest(`/api/assets/MutualFund/${id}`, { 
     method: 'DELETE',
-    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
   });
-  if (response.status === 401) handleUnauthorized();
 };
 
 export const addRealEstate = async (payload) => {
-  const response = await fetch('/api/add_real_estate', {
+  const response = await handleRequest('/api/add_real_estate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
     body: JSON.stringify(payload),
   });
-  if (response.status === 401) handleUnauthorized();
   return response;
 };
 
 export const updateRealEstate = async (id, payload) => {
-  const response = await fetch(`/api/assets/RealEstate/${id}`, {
+  const response = await handleRequest(`/api/assets/RealEstate/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
     body: JSON.stringify(payload),
   });
-  if (response.status === 401) handleUnauthorized();
   return response;
 };
 
 export const fetchRealEstates = async () => {
-  const response = await fetch('/api/assets/RealEstate', {
-    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+  const response = await handleRequest('/api/assets/RealEstate', {
+    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
   });
-  if (response.status === 401) handleUnauthorized();
   const data = await response.json();
   return data;
 };
 
 export const deleteRealEstate = async (id) => {
-  const response = await fetch(`/api/assets/RealEstate/${id}`, { 
+  await handleRequest(`/api/assets/RealEstate/${id}`, { 
     method: 'DELETE',
-    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
   });
-  if (response.status === 401) handleUnauthorized();
 };
 
 export const saveStock = async (payload) => {
   const url = '/api/add_stock';
   const method = 'POST';
 
-  const response = await fetch(url, {
+  const response = await handleRequest(url, {
     method,
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
     body: JSON.stringify(payload),
   });
-  if (response.status === 401) handleUnauthorized();
   return response;
 };
 
@@ -183,28 +182,37 @@ export const editStock = async (payload) => {
   const url = `/api/assets/Stock/${payload.id}`;
   const method = 'PUT';
 
-  const response = await fetch(url, {
+  const response = await handleRequest(url, {
     method,
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
     body: JSON.stringify(payload),
   });
-  if (response.status === 401) handleUnauthorized();
   return response;
 };
 
 export const fetchStocks = async () => {
-  const response = await fetch('/api/assets/Stock', {
-    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+  const response = await handleRequest('/api/assets/Stock', {
+    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
   });
-  if (response.status === 401) handleUnauthorized();
   const data = await response.json();
   return data;
 };
 
 export const deleteStock = async (id) => {
-  const response = await fetch(`/api/assets/Stock/${id}`, { 
+  await handleRequest(`/api/assets/Stock/${id}`, { 
     method: 'DELETE',
-    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') },
   });
-  if (response.status === 401) handleUnauthorized();
+};
+
+export const searchMutualFunds = async (query) => {
+  if (!query) return [];
+  try {
+    const response = await fetch(`https://api.mfapi.in/mf/search?q=${query}`);
+    if (!response.ok) throw new Error('Failed to fetch mutual fund schemes');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching mutual fund schemes:', error);
+    return [];
+  }
 };

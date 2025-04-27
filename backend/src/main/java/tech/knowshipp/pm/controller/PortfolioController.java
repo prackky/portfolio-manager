@@ -122,6 +122,7 @@ public class PortfolioController {
                     if (type.equals("Stock") || type.equals("MutualFund")) {
                         map.put("id", a.getId());
                         // map.put("transType", a instanceof Stock ? ((Stock) a).getTransactions().get(0).getType() : ((MutualFund) a).getTransactions().get(0).getType());
+                        map.put("name", a.getName());
                         map.put("shares", a instanceof Stock ? ((Stock) a).getCurrentHoldings() : null);
                         map.put("units", a instanceof MutualFund ? ((MutualFund) a).getCurrentHoldings() : null);
                         map.put("price", a instanceof Stock ? ((Stock) a).getTransactions().stream().mapToDouble(t -> t.getPrice() * t.getShares()).sum() / ((Stock) a).getTransactions().stream().mapToDouble(t -> t.getShares()).sum() : ((MutualFund) a).getTransactions().stream().mapToDouble(t -> t.getPrice() * t.getShares()).sum() / ((MutualFund) a).getTransactions().stream().mapToDouble(t -> t.getShares()).sum());
@@ -187,6 +188,7 @@ public class PortfolioController {
         portfolioService.addMutualFund(
                 email,
                 request.get("id"),
+                request.get("name"),
                 request.get("transType"),
                 Double.parseDouble(request.get("units")),
                 Double.parseDouble(request.get("price")),

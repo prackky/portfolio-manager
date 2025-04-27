@@ -1,5 +1,6 @@
 package tech.knowshipp.pm.model;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,12 +10,17 @@ public class MutualFund extends Asset {
 
     public MutualFund() { super(null, "MutualFund"); } // Required for MongoDB
 
-    public MutualFund(String fundName) {
-        super(fundName, "MutualFund");
+    public MutualFund(String fundId) {
+        super(fundId, "MutualFund");
         this.currentPrice = 0;
     }
 
-    public void addTransaction(String transType, double units, double price, java.time.LocalDate date) {
+    public MutualFund(String id, String name) {
+        super(id, "MutualFund", name);
+        this.currentPrice = 0;
+    }
+
+    public void addTransaction(String transType, double units, double price, LocalDate date) {
         if("sell".equals(transType) && units > getCurrentHoldings()) {
             throw new IllegalArgumentException("Cannot sell more shares than currently held");
         }
