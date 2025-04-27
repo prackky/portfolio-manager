@@ -42,7 +42,7 @@ function MutualFundTab() {
           <table className="min-w-full bg-white dark:bg-gray-700 rounded-lg shadow-md">
             <thead className="bg-gray-100 dark:bg-gray-600">
               <tr>
-                <th className="py-3 px-6 text-left text-gray-600 dark:text-gray-200 font-semibold">Symbol</th>
+                <th className="py-3 px-6 text-left text-gray-600 dark:text-gray-200 font-semibold">Name</th>
                 <th className="py-3 px-6 text-left text-gray-600 dark:text-gray-200 font-semibold">Units</th>
                 <th className="py-3 px-6 text-left text-gray-600 dark:text-gray-200 font-semibold">Price</th>
                 <th className="py-3 px-6 text-left text-gray-600 dark:text-gray-200 font-semibold">CMP</th>
@@ -52,7 +52,7 @@ function MutualFundTab() {
             <tbody>
               {mfs.map((mf) => (
                 <tr key={mf.id} className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                  <td className="py-3 px-6 text-gray-800 dark:text-gray-200">{mf.id}</td>
+                  <td className="py-3 px-6 text-gray-800 dark:text-gray-200">{mf.name}</td>
                   <td className="py-3 px-6 text-gray-800 dark:text-gray-200">{mf.units}</td>
                   <td className="py-3 px-6 text-gray-800 dark:text-gray-200">{mf.price}</td>
                   <td className="py-3 px-6 text-gray-800 dark:text-gray-200">{mf.cmp}</td>

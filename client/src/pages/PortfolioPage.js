@@ -38,7 +38,7 @@ const PortfolioPage = () => {
 
   useEffect(() => {
     const fetchPortfolio = async () => {
-      const data = await fetchAssets();
+      const data = await fetchAssets(); // Automatically uses global setLoading from api.js
       setPortfolio(data);
     };
     fetchPortfolio();
